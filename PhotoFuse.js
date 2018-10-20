@@ -9,7 +9,7 @@ var PhotoFuse =
       this.channelsPerPixel = channelsPerPixel;
       
       this.data = [];
-      for (var i = 0; i < this.width*this.height*this.channelsPerPixel; i++)
+      for (var i = 0, lenI = this.width*this.height*this.channelsPerPixel; i < lenI; i++)
       {
         this.data.push(0);
       }
@@ -29,14 +29,11 @@ var PhotoFuse =
       
       this.setPixelData = function(x, y, pixelData)
       {
-        if (pixelData.length == this.channelsPerPixel)
+        var pixelIndex = (y*this.width + x)*this.channelsPerPixel;
+        
+        for (var c = 0; c < this.channelsPerPixel; c++)
         {
-          var pixelIndex = (y*this.width + x)*this.channelsPerPixel;
-          
-          for (var c = 0; c < pixelData.length; c++)
-          {
-            this.data[pixelIndex + c] = pixelData[c];
-          }
+          this.data[pixelIndex + c] = pixelData[c];
         }
       };
       
@@ -49,10 +46,13 @@ var PhotoFuse =
           {
             for (var x = 0; x < this.width; x++)
             {
+              var originalPixelData = this.getPixelData(x, y);
+              var pixelDataToAdd = pixelArray.getPixelData(x, y);
+              
               var addedPixelData = [];
               for (var c = 0; c < this.channelsPerPixel; c++)
               {
-                addedPixelData.push(this.getPixelData(x, y)[c] + pixelArray.getPixelData(x, y)[c]);
+                addedPixelData.push(originalPixelData[c] + pixelDataToAdd[c]);
               }
               
               addedPixelArray.setPixelData(x, y, addedPixelData);
@@ -72,10 +72,13 @@ var PhotoFuse =
           {
             for (var x = 0; x < this.width; x++)
             {
+              var originalPixelData = this.getPixelData(x, y);
+              var pixelDataToSubtract = pixelArray.getPixelData(x, y);
+
               var subtractedPixelData = [];
               for (var c = 0; c < this.channelsPerPixel; c++)
               {
-                subtractedPixelData.push(this.getPixelData(x, y)[c] - pixelArray.getPixelData(x, y)[c]);
+                subtractedPixelData.push(originalPixelData[c] - pixelDataToSubtract[c]);
               }
               
               subtractedPixelArray.setPixelData(x, y, subtractedPixelData);
@@ -95,16 +98,19 @@ var PhotoFuse =
           {
             for (var x = 0; x < this.width; x++)
             {
+              var originalPixelData = this.getPixelData(x, y);
+              var pixelDataToMultiply = pixelArray.getPixelData(x, y);
+              
               var multipliedPixelData = [];
               for (var c = 0; c < this.channelsPerPixel; c++)
               {
                 if (pixelArray.channelsPerPixel == 1)
                 {
-                  multipliedPixelData.push(this.getPixelData(x, y)[c]*pixelArray.getPixelData(x, y)[0]);
+                  multipliedPixelData.push(originalPixelData[c]*pixelDataToMultiply[0]);
                 }
                 else if (pixelArray.channelsPerPixel == this.channelsPerPixel)
                 {
-                  multipliedPixelData.push(this.getPixelData(x, y)[c]*pixelArray.getPixelData(x, y)[c]);
+                  multipliedPixelData.push(originalPixelData[c]*pixelDataToMultiply[c]);
                 }
               }
               
@@ -124,16 +130,16 @@ var PhotoFuse =
         {
           for (var x = 0; x < this.width; x++)
           {
+            var pixelData = this.getPixelData(x, y);
+            var pixelDataLeft = x > 0 ? this.getPixelData(x - 1, y) : pixelData;
+            var pixelDataTwoLeft = x > 1 ? this.getPixelData(x - 2, y) : pixelDataLeft;
+            var pixelDataRight = x < this.width - 1 ? this.getPixelData(x + 1, y) : pixelData;
+            var pixelDataTwoRight = x < this.width - 2 ? this.getPixelData(x + 2, y) : pixelDataRight;
+              
             var filteredPixelData = [];
             for (var c = 0; c < this.channelsPerPixel; c++)
             {
-              var value = this.getPixelData(x, y)[c];
-              var valueLeft = x > 0 ? this.getPixelData(x - 1, y)[c] : value;
-              var valueTwoLeft = x > 1 ? this.getPixelData(x - 2, y)[c] : valueLeft;
-              var valueRight = x < this.width - 1 ? this.getPixelData(x + 1, y)[c] : value;
-              var valueTwoRight = x < this.width - 2 ? this.getPixelData(x + 2, y)[c] : valueRight;
-              
-              filteredPixelData.push(0.0625*valueTwoLeft + 0.25*valueLeft + 0.375*value + 0.25*valueRight + 0.0625*valueTwoRight);
+              filteredPixelData.push(0.0625*pixelDataTwoLeft[c] + 0.25*pixelDataLeft[c] + 0.375*pixelData[c] + 0.25*pixelDataRight[c] + 0.0625*pixelDataTwoRight[c]);
             }
             
             filteredArrayH.setPixelData(x, y, filteredPixelData);
@@ -146,16 +152,16 @@ var PhotoFuse =
         {
           for (var x = 0; x < this.width; x++)
           {
+            var pixelData = filteredArrayH.getPixelData(x, y);
+            var pixelDataUp = y > 0 ? filteredArrayH.getPixelData(x, y - 1) : pixelData;
+            var pixelDataTwoUp = y > 1 ? filteredArrayH.getPixelData(x, y - 2) : pixelDataUp;
+            var pixelDataDown = y < this.height - 1 ? filteredArrayH.getPixelData(x, y + 1) : pixelData;
+            var pixelDataTwoDown = y < this.height - 2 ? filteredArrayH.getPixelData(x, y + 2) : pixelDataDown;
+            
             var filteredPixelData = [];
             for (var c = 0; c < this.channelsPerPixel; c++)
             {
-              var value = filteredArrayH.getPixelData(x, y)[c];
-              var valueUp = y > 0 ? filteredArrayH.getPixelData(x, y - 1)[c] : value;
-              var valueTwoUp = y > 1 ? filteredArrayH.getPixelData(x, y - 2)[c] : valueUp;
-              var valueDown = y < this.height - 1 ? filteredArrayH.getPixelData(x, y + 1)[c] : value;
-              var valueTwoDown = y < this.height - 2 ? filteredArrayH.getPixelData(x, y + 2)[c] : valueDown;
-              
-              filteredPixelData.push(0.0625*valueTwoUp + 0.25*valueUp + 0.375*value + 0.25*valueDown + 0.0625*valueTwoDown);
+              filteredPixelData.push(0.0625*pixelDataTwoUp[c] + 0.25*pixelDataUp[c] + 0.375*pixelData[c] + 0.25*pixelDataDown[c] + 0.0625*pixelDataTwoDown[c]);
             }
             
             filteredArrayHV.setPixelData(x, y, filteredPixelData);
@@ -251,7 +257,7 @@ var PhotoFuse =
             var paddedPixelData = paddedArray.getPixelData(x/2, y/2);
             
             var paddedPixelDataMultiplied = [];
-            for (var c = 0; c < paddedPixelData.length; c++)
+            for (var c = 0, lenC = paddedPixelData.length; c < lenC; c++)
             {
               paddedPixelDataMultiplied.push(4*paddedPixelData[c]);
             }
@@ -425,17 +431,18 @@ var PhotoFuse =
     }
     
     // Normalise weight maps
+    var numberOfWeightMaps = imageWeightMaps.length;
     for (var y = 0; y < images[0].height; y++)
     {
       for (var x = 0; x < images[0].width; x++)
       {
         var weightMapPixelTotal = 0;
-        for (var i = 0; i < imageWeightMaps.length; i++)
+        for (var i = 0; i < numberOfWeightMaps; i++)
         {
           weightMapPixelTotal += imageWeightMaps[i].getPixelData(x, y)[0];
         }
         
-        for (var i = 0; i < imageWeightMaps.length; i++)
+        for (var i = 0; i < numberOfWeightMaps; i++)
         {
           imageWeightMaps[i].setPixelData(x, y, [imageWeightMaps[i].getPixelData(x, y)[0]/weightMapPixelTotal]);
         }
