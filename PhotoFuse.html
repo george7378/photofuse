@@ -3,6 +3,8 @@
   
   <head>
     
+    <link rel="stylesheet" type="text/css" href="PhotoFuse.css">
+    
     <script src="PhotoFuse.js"></script>
     
     <script>
@@ -45,13 +47,13 @@
   
   <body>
 
-    <button onclick="document.getElementById('imageFileInput').click();">Open images</button>
+    <button class="actionButton" onclick="document.getElementById('imageFileInput').click();">Open Images</button>
     <input type="file" id="imageFileInput" name="imageFileInput" accept="image/*" multiple style="display: none;" onchange="loadImages()"/>
     
-    <button onclick="fuseImages()">Fuse images</button>
+    <button class="actionButton" onclick="fuseImages()">Fuse Images</button>
   
-    <img id="result"/>
-  
+    <img class="resultImage" id="result"/>
+    
   </body>
   
 </html>
