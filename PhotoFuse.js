@@ -202,7 +202,7 @@ var PhotoFuse =
             }
           }
         }
-      }
+      };
       
       this.getSubsetArray = function(startX, startY, endX, endY)
       {
