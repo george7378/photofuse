@@ -8,11 +8,8 @@ var PhotoFuse =
       this.height = height;
       this.channelsPerPixel = channelsPerPixel;
       
-      this.data = [];
-      for (var i = 0, lenI = this.width*this.height*this.channelsPerPixel; i < lenI; i++)
-      {
-        this.data.push(0);
-      }
+      var dataBuffer = new ArrayBuffer(this.width*this.height*this.channelsPerPixel*4);
+      this.data = new Float32Array(dataBuffer);
       
       this.getPixelData = function(x, y)
       {
