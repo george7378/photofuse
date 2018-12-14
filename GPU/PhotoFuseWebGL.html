@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  
+  <head>
+    
+    <link rel="stylesheet" type="text/css" href="PhotoFuseWebGL.css">
+    
+    <script src="PhotoFuseWebGL.js"></script>
+    
+    <script>
+      var images;
+    </script>
+    
+    <script>
+      function loadImages()
+      {
+        images = [];
+        var imageFileInputElement = document.getElementById("imageFileInput");
+
+        for (var i = 0; i < imageFileInputElement.files.length; i++)
+        {
+          var fileReader = new FileReader();
+          fileReader.onload = function(event)
+          {
+            var image = new Image();
+            image.onload = function(event)
+            {
+              images.push(event.target);
+            }
+            image.src = event.target.result;
+          }
+          fileReader.readAsDataURL(imageFileInputElement.files[i]);
+        }
+      }
+    </script>
+    
+    <script>
+      function fuseImages()
+      {
+        if (images.length < 2)
+        {
+          alert("Please select at least two images for fusion.");
+          
+          return;
+        }
+        
+        for (var i = 1; i < images.length; i++)
+        {
+          if (images[i].width != images[0].width || images[i].height != images[0].height)
+          {
+            alert("Please ensure all selected images have the same dimensions.");
+          
+            return;
+          }
+        }
+        
+        var gl = document.createElement("canvas").getContext("webgl");
+        var textureFloatExtension = gl.getExtension("OES_texture_float");
+        
+        document.getElementById("result").src = PhotoFuse.fuseImages(gl, images).src;
+      }
+    </script>
+    
+  </head>
+  
+  <body>
+
+    <button class="actionButton" onclick="document.getElementById('imageFileInput').click();">Open Images</button>
+    <input type="file" id="imageFileInput" name="imageFileInput" accept="image/*" multiple style="display: none;" onchange="loadImages()"/>
+    
+    <button class="actionButton" onclick="fuseImages()">Fuse Images</button>
+
+    <img class="resultImage" id="result"/>
+    
+  </body>
+  
+</html>
